@@ -36,13 +36,13 @@
 3. Edit Windows Enviroment Path
 4. Add `C:\msys64\mingw64\bin` to Environment Path
 
-## Easy Installation for Windows PC
+## Easy Installation for Windows
 Execute `1-click Installation for windows.bat` to compile TTT.exe\
 Run `TTT.exe`
 
 ## If easy installation does not work:
 
-### Manual Steps (Windows)
+### Manual Steps
 1. Open MSYS2 MinGW64 terminal.
 2. `cd` to the repository root.
 3. Build with GTK flags via pkg-config and link WinMM for sound:
