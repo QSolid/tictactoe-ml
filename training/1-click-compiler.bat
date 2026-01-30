@@ -1,0 +1,1 @@
+gcc -o ml .\training\ML-Training.c
