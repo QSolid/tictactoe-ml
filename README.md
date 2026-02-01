@@ -1,4 +1,4 @@
-**Overview**
+## Overview
 
 - A GTK-based Tic‑Tac‑Toe game in C with two AI modes — Minimax and a simple ML mode that uses linear regression. 
 
@@ -24,7 +24,7 @@
 - Prerequisites: Install GTK3 via MSYS2 and ensure gcc is available.
 - Build the app (PowerShell):
 
-	".\scripts\1-click Installation for windows.bat"
+	".\scripts\1-click-installation-for-windows.bat"
 
 - Run from the repository root so the app can load assets/ and models/:
 
