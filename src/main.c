@@ -162,7 +162,7 @@ void makeMLMove()
         return;
       }
       // Game continues - update status to indicate next player's turn
-      update_game_status("PLAYER 2'S MOVE", 4);
+      update_game_status("PLAYER 1'S MOVE", 4);
       break;  // Exit loop after processing the move
     }
   }

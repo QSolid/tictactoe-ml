@@ -316,7 +316,9 @@ int set_playermove(int row, int col, GtkButton *buttonTemp)
     else 
     {
       compMove();
-      gtk_label_set_text(statusbtn, "PLAYER 1'S MOVE");
+      if (gameNotOver) {
+        gtk_label_set_text(statusbtn, "PLAYER 1'S MOVE");
+      }
     }
   }
   return 0;
