@@ -102,56 +102,5 @@ static inline float Eval_Approx(int features[FEATURES], float weight[FEATURES])
     return value;
 }
 
-// One-ply minimax around linear evaluation to reduce blunders.
-// Evaluates from X perspective: X maximizes, O minimizes.
-static inline int compute_best_move_depth1(int state[BOARD], float weights[FEATURES], int player)
-{
-    float best_val = (player == ML_X) ? -FLT_MAX : FLT_MAX;
-    int best_move = -1;
-
-    // Try each legal move for current player
-    for (int i = 0; i < BOARD; i++) {
-        if (state[i] != 0) continue;
-
-        // Make candidate move
-        state[i] = player;
-        int opp = (player == ML_X) ? ML_O : ML_X;
-
-        // Opponent chooses a reply that is best for them (max for X, min for O)
-        float reply_val = (opp == ML_X) ? -FLT_MAX : FLT_MAX;
-        int any_reply = 0;
-        for (int j = 0; j < BOARD; j++) {
-            if (state[j] != 0) continue;
-            any_reply = 1;
-            state[j] = opp;
-            get_board_features(state, ML_X);
-            float v = Eval_Approx(board_feature, weights);
-            state[j] = 0;
-            if (opp == ML_X) {
-                if (v > reply_val) reply_val = v;
-            } else {
-                if (v < reply_val) reply_val = v;
-            }
-        }
-
-        // If no reply (terminal or full board), evaluate current position
-        if (!any_reply) {
-            get_board_features(state, ML_X);
-            reply_val = Eval_Approx(board_feature, weights);
-        }
-
-        // Undo candidate move
-        state[i] = 0;
-
-        // Current player picks move based on X-perspective value after opponent's best reply
-        if (player == ML_X) {
-            if (reply_val > best_val) { best_val = reply_val; best_move = i; }
-        } else {
-            if (reply_val < best_val) { best_val = reply_val; best_move = i; }
-        }
-    }
-
-    return best_move;
-}
 
 #endif // ML_SHARED_H

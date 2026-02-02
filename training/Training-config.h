@@ -32,7 +32,6 @@ void BestMove(int state[BOARD],float weights[FEATURES],int player); // Get the b
 void evaluateModel(float Yhat, float y, int* TP, int* TN, int* FP, int* FN, int* total_errors, int* errors, int index); // Function to evaluate model metrics
 void printModelMetrics(const char* phase, float MMSE, int total_errors, int size, int TP, int TN, int FP, int FN); // Function to print model metrics
 void processModelData(const char* phase, int dataset[][BOARD + 1], int size, float weight[FEATURES], int updateWeights, int writeWeights); // Unified function to process model data
-void TrainwithItself(int cycles, float weight[FEATURES]);
 void shuffle_rows(int a[][BOARD + 1], int count);
 
 

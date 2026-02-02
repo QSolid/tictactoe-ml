@@ -472,9 +472,39 @@ void testModel(int testing_set[TESTING_SIZE][BOARD +1],float weight[FEATURES])
 // Get the best move the AI can make using the trained weights
 void BestMove(int state[BOARD],float weights[FEATURES],int player)
 {
-    int best_move = compute_best_move_depth1(state, weights, (player == PLAYER_X) ? ML_X : ML_O);
-    if (best_move != -1) {
-        board_state[best_move] = player;
+    // Select move by maximizing ML evaluation from current player's perspective
+    int cplayer = (player == PLAYER_X) ? ML_X : ML_O; // map 1/2 -> 1/-1
+    int best_index = -1;
+    float best_score = -FLT_MAX;
+
+    // Build ML-encoded copy of board (1 for X, -1 for O, 0 empty)
+    int ml_state[BOARD];
+    for (int i = 0; i < BOARD; i++) {
+        if (state[i] == 1) ml_state[i] = ML_X;
+        else if (state[i] == 2) ml_state[i] = ML_O;
+        else ml_state[i] = ML_EMPTY;
+    }
+
+    // Try all legal moves and pick the one with highest Eval_Approx
+    for (int i = 0; i < BOARD; i++) {
+        if (state[i] != 0) continue; // skip occupied
+
+        int saved = ml_state[i];
+        ml_state[i] = cplayer; // simulate move in ML encoding
+
+        get_board_features(ml_state, cplayer);
+        float score = Eval_Approx(board_feature, weights);
+
+        if (score > best_score) {
+            best_score = score;
+            best_index = i;
+        }
+
+        ml_state[i] = saved; // revert
+    }
+
+    if (best_index != -1) {
+        board_state[best_index] = player; // write back in training's encoding (1 or 2)
     }
     //printBoard(board_state);
 }
@@ -1032,94 +1062,4 @@ void writeweights()
         fprintf(writeOut,"%f\n",init_weight[i]);
     }
     fclose(writeOut);
-}
-
-void TrainwithItself(int cycles, float weight[FEATURES])
-{
-    // 1 is controlled ML 2 is opponents
-    int board_status =9, current_player=0,controlled_player=1,result=0;
-    float actual_value,predicted_value,outcome;
-
-    int temp_features[FEATURES]; //temp features to be used by controlled ML
-
-    //pit ml vs ml for no of cycle
-    for(int i=0; i<cycles;i++)
-    {
-        reset(); // reset board after each game
-        board_status =9;
-        //change who starts first
-        if(i % 2 == 0)
-        {
-            current_player =1;
-        }
-        else
-        {
-            current_player =2;
-        }
-        for(int j=0;j<SIZE;j++)
-        {
-            get_board_features(board_state,controlled_player);
-            predicted_value = Eval_Approx(board_feature,init_weight);
-            //set current weight into temp
-            for(int k=0;k<FEATURES;k++)
-            {
-                temp_features[k] = board_feature[k];
-            }
-            
-            //Controlled ML Move
-            BestMove(board_state,init_weight,current_player);
-            board_status = BoardState(board_state);
-            if(board_status != 9)
-            {
-                break;
-            }
-            //opposing ML Move
-            if(current_player == 1)
-            {
-                current_player =2;
-            }
-            else
-            {
-                current_player =1;
-            }
-            BestMove(board_state,init_weight,current_player);
-            board_status = BoardState(board_state);
-            if(board_status != 9)
-            {
-                break;
-            }
-            if(current_player == 1)
-            {
-                current_player =2;
-            }
-            else
-            {
-                current_player =1;
-            }
-            //get feature and actual value
-            get_board_features(board_state,controlled_player);
-            actual_value = Eval_Approx(board_feature,init_weight);
-            updateWeight(learning_rate,temp_features,init_weight,actual_value,predicted_value);
-        }
-
-        //set result after a game is finished
-        if(board_status == 0)
-        {
-            result =0;
-        }
-        else if(board_status == 1)
-        {
-            result = 1;
-        }
-        else
-        {
-            result = -1;
-        }
-        //get feature and outcome value
-        get_board_features(board_state,controlled_player);
-        outcome = Eval_Approx(board_feature,init_weight);
-        updateWeight(learning_rate,temp_features,init_weight,result,outcome);
-
-}
-reset();
 }

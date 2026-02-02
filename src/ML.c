@@ -46,9 +46,29 @@ void init_ml_system()
 // Get the best move the AI can make using the trained weights
 void BestMove(int state[BOARD],float weights[FEATURES],int player)
 {
-    int best_move = compute_best_move_depth1(state, weights, player);
-    if (best_move != -1) {
-        ml_board_state[best_move] = player;
+    // Pure-ML one-ply: pick move maximizing Eval_Approx for `player`
+    int best_index = -1;
+    float best_score = -FLT_MAX;
+
+    for (int i = 0; i < BOARD; i++) {
+        if (state[i] != ML_EMPTY) continue;
+
+        int saved = state[i];
+        state[i] = player; // simulate move in ML encoding
+
+        get_board_features(state, player);
+        float score = Eval_Approx(board_feature, weights);
+
+        if (score > best_score) {
+            best_score = score;
+            best_index = i;
+        }
+
+        state[i] = saved;
+    }
+
+    if (best_index != -1) {
+        ml_board_state[best_index] = player;
     }
 }
 
