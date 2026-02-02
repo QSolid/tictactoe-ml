@@ -1,15 +1,20 @@
 /*Prototypes and Global Variables that are being used in ML.c*/
-#define BOARD 9                             // Grids of tic-tac-toe board
-#define FEATURES 7                          // Number of features 
-#define DATA_FILE "training/data/tic-tac-toe.data"        // File path for dataset (relative to repo root)
-#define SIZE 958                            // Total lines in dataset
-#define TRAINING_SIZE 764                   // 80% of total manual calc might overflow
-#define TESTING_SIZE 194                    // 20% of total manual calc might overflow
-#define CLASS_THRESHOLD 0                   // Classification threshold
-#define GAME_LENGTH 1000                    // How many games to play
-#define EPOCH 10000                       // 10 thousand cycles
-
-
+#define BOARD 9                                     // Grids of tic-tac-toe board
+#define FEATURES 7                                  // Number of features 
+#define DATA_FILE "training/data/tic-tac-toe.data"  // File path for dataset (relative to repo root)
+#define SIZE 958                                    // Total lines in dataset
+#define TRAINING_SIZE 764                           // 80% of total manual calc might overflow
+#define TESTING_SIZE 194                            // 20% of total manual calc might overflow
+#define CLASS_THRESHOLD 0                           // Classification threshold
+#define GAME_LENGTH 1000                            // How many games to play
+#define EPOCH 1
+// Dataset/player markers for ML feature evaluation
+#define ML_EMPTY 0
+#define ML_X 1
+#define ML_O -1
+// CLI game player ids used in training/evaluation loops
+#define PLAYER_X 1
+#define PLAYER_O 2
 
 
 // ML Prototypes
@@ -27,8 +32,10 @@ void testModel(int testing_set[TESTING_SIZE][BOARD +1],float weight[FEATURES]); 
 void BestMove(int state[BOARD],float weights[FEATURES],int player); //get the best move the AI can make using the trained weights
 void evaluateModel(float Yhat, float y, int* TP, int* TN, int* FP, int* FN, int* total_errors, int* errors, int index); // Function to evaluate model metrics
 void printModelMetrics(const char* phase, float MMSE, int total_errors, int size, int TP, int TN, int FP, int FN); // Function to print model metrics
-void processModelData(const char* phase, int dataset[][BOARD + 1], int size, float weight[FEATURES]); // Unified function to process both training and testing model data
-void TrainwithItself(int cycles, float wieght[FEATURES]);
+void processModelData(const char* phase, int dataset[][BOARD + 1], int size, float weight[FEATURES], int updateWeights, int writeWeights); // Unified function to process model data
+void TrainwithItself(int cycles, float weight[FEATURES]);
+void shuffle_rows(int a[][BOARD + 1], int count);
+
 
 // Game Prototypes
 void printBoard(int state[BOARD]); // Print board to CLI

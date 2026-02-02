@@ -7,11 +7,11 @@ void on_pvpstartbutton_clicked(GtkWidget *click_button, gpointer user_data)
   GtkBuilder *builder;
   GtkWidget *window;
 
-  // initialising GTKbuilder with .glade file
+  // Initialise GTKBuilder with the .glade file
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "assets/tictactoeUI.glade", NULL);
 
-  // initialising main window widget and button
+  // Initialise main window widget and buttons
   window = GTK_WIDGET(gtk_builder_get_object(builder, "mainWindow"));
   button11 = GTK_WIDGET(gtk_builder_get_object(builder, "button11"));
   button12 = GTK_WIDGET(gtk_builder_get_object(builder, "button12"));
@@ -22,31 +22,31 @@ void on_pvpstartbutton_clicked(GtkWidget *click_button, gpointer user_data)
   button31 = GTK_WIDGET(gtk_builder_get_object(builder, "button31"));
   button32 = GTK_WIDGET(gtk_builder_get_object(builder, "button32"));
   button33 = GTK_WIDGET(gtk_builder_get_object(builder, "button33"));
-  // initialise label for game mode and status button
+  // Initialise labels for game mode, game stats, and status
   gamemode = GTK_LABEL(gtk_builder_get_object(builder, "gamemode"));
   game_stats = GTK_LABEL(gtk_builder_get_object(builder, "game_stats"));
   statusbtn = GTK_LABEL(gtk_builder_get_object(builder, "statusbtn"));
 
-  // connect to all signal define in the glade file
+  // Connect to all signals defined in the glade file
   gtk_builder_connect_signals(builder, NULL);
 
-  // release gtk builder resource by dereferencing the builder pointer
+  // Release GTK builder resources by dereferencing the builder pointer
   g_object_unref(builder);
 
-  // destroy the current widget after player vs player button is clicked
+  // Destroy the current widget after Player vs Player button is clicked
   gtk_widget_destroy((GtkWidget *)user_data);
 
-  // showing main window widget (game page)
+  // Show main window widget (game page)
   gtk_widget_show(window);
 
-  // Set initial game variables to player vs player
+  // Set initial game variables to Player vs Player
   gameType = 0;   // set game type to 0 (player vs player)
   statusFlag = 1; // Set status flag to 1 (start game)
   flag = 1;
 
   update_game_status("PLAYER 1'S MOVE", 4);
 
-  // Set label for game mode not avaialable as there is no mode for player vs player
+  // Set label for game mode to not available (no mode for Player vs Player)
   gtk_label_set_text(gamemode, "Game mode not available");
 }
 
@@ -55,11 +55,11 @@ void on_pvcstartbutton_clicked(GtkWidget *click_button, gpointer user_data)
   GtkBuilder *builder;
   GtkWidget *window;
 
-  // initialising GTKbuilder with .glade file
+  // Initialise GTKBuilder with the .glade file
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "assets/tictactoeUI.glade", NULL);
 
-  // initialising main window, button and labels for game mode and status button
+  // Initialise main window, buttons, and labels for game mode and status
   window = GTK_WIDGET(gtk_builder_get_object(builder, "mainWindow"));
   button11 = GTK_WIDGET(gtk_builder_get_object(builder, "button11"));
   button12 = GTK_WIDGET(gtk_builder_get_object(builder, "button12"));
@@ -76,62 +76,62 @@ void on_pvcstartbutton_clicked(GtkWidget *click_button, gpointer user_data)
   modebutton = GTK_WIDGET(gtk_builder_get_object(builder, "chooseDifficultyButton"));
   gtk_builder_connect_signals(builder, NULL);
 
-  // release gtk builder resource
+  // Release GTK builder resources
   g_object_unref(builder);
 
   gtk_widget_destroy((GtkWidget *)user_data);
-  // showing main window widget
+  // Show main window widget
   gtk_widget_show(window);
   // Set initial game variables
   gameType = 1;   // set game type to 1 (player vs computer)
-  statusFlag = 1; // set status flag to 1 (Indicate game start)
+  statusFlag = 1; // Set status flag to 1 (indicates game start)
   flag = 1;
-  gameDifficulty = 1; // Set game mode difficulty to 1 (Medium mode when game start)
+  gameDifficulty = 1; // Set game mode difficulty to 1 (Medium mode at start)
 
   update_game_status("PLAYER 1'S MOVE", 4);
   // Set label for game mode
   gtk_label_set_text(gamemode, "Medium");
 }
 
-// Run when Mainmenu button on the game page is clicked, it will return back to the start menu page
+// Run when Main Menu button on the game page is clicked; returns to the start menu
 void on_mainmenu_clicked(GtkWidget *click_button, gpointer user_data)
 {
   GtkBuilder *builder;
   GtkWidget *start;
 
-  // initialising GTKbuilder with .glade file
+  // Initialise GTKBuilder with the .glade file
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "assets/tictactoeUI.glade", NULL);
 
-  // initialising main window widget
+  // Initialise main window widget
   start = GTK_WIDGET(gtk_builder_get_object(builder, "startWindow"));
 
   gtk_builder_connect_signals(builder, NULL);
 
-  // release gtk builder resource by dereferencing the builder pointer
+  // Release GTK builder resources by dereferencing the builder pointer
   g_object_unref(builder);
 
-  // reset board and game
+  // Reset board and game
   resetgame();
   player_1_win = player_2_win = game_draw = 0;
 
-  // destroy current window
+  // Destroy current window
   gtk_widget_destroy((GtkWidget *)user_data);
 
-  // showing start menu
+  // Show start menu
   gtk_widget_show(start);
 }
 
-// called when quit is selected in settings menu
+// Called when Quit is selected in the Settings menu
 void on_gameExit_activate()
 {
   gtk_main_quit();
 }
 
-// run when game mode left button is click (set game mode decreasing order)
+// Run when game mode left button is clicked (decrease game mode)
 void on_clickleft_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // only run when game mode is 1 (player vs computer mode)
+  // Only run when game mode is 1 (Player vs Computer)
   if (gameType == 1)
   {
     // set game difficulty to only 0 1 2 (easy , medium, hard) in a decreasing format
@@ -164,20 +164,20 @@ void on_clickleft_clicked(GtkWidget *click_button, gpointer user_data)
   }
 }
 
-// run when game mode right button is click (set game mode increasing order)
+// Run when game mode right button is clicked (increase game mode)
 void on_clickright_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // only run when game mode is 1 (player vs computer mode)
+  // Only run when game mode is 1 (Player vs Computer)
   if (gameType == 1)
   {
-    // set game difficulty to only 0 1 2 (easy , medium, hard, ML) in an increasing format
+    // Set game difficulty to only 0 1 2 (easy , medium, hard, ML) in an increasing format
     gameDifficulty = (gameDifficulty + 1) % 4;
 
-    // reset game and wins when game mode is change
+    // Reset game and wins when game mode is change
     resetgame();
     player_1_win = player_2_win = game_draw = 0;
 
-    // change label button base on difficulty
+    // Change label button base on difficulty
     switch (gameDifficulty)
     {
     case 0:
@@ -200,17 +200,17 @@ void on_clickright_clicked(GtkWidget *click_button, gpointer user_data)
   }
 }
 
-// runs when restart is selected.
+// Run when Restart is selected
 void on_restartGame_activate(GtkWidget *click_button, gpointer user_data)
 {
-  // if game not started, no point resetting
+  // If game not started, no point resetting
   if (!statusFlag)
     return;
 
-  // call reset game function
+  // Call reset game function
   resetgame();
 
-  // set label
+  // Set label
   gtk_label_set_text(statusbtn, "Game restarted. Player 1 make your move!");
 }
 
@@ -324,122 +324,122 @@ int set_playermove(int row, int col, GtkButton *buttonTemp)
   return 0;
 }
 
-// runs when button Row 1, column 1 is clicked
+// Run when row 1, column 1 button is clicked
 int on_button11_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
 
-  // play sound
+  // Play sound
   play_sound("select.wav");
 
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(0, 0, buttonTemp);
   return 0;
 }
 
-// runs when button Row 1, column 2 is clicked
+// Run when row 1, column 2 button is clicked
 int on_button12_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-  // play sound
+  // Play sound
   play_sound("select.wav");
 
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(0, 1, buttonTemp);
   return 0;
 }
 
-// runs when button Row 1, column 3 is clicked
+// Run when row 1, column 3 button is clicked
 int on_button13_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-  // play sound
+  // Play sound
   play_sound("select.wav");
 
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(0, 2, buttonTemp);
   return 0;
 }
 
-// runs when button Row 2, column 1 is clicked
+// Run when row 2, column 1 button is clicked
 int on_button21_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-  // play sound
+  // Play sound
   play_sound("select.wav");
 
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(1, 0, buttonTemp);
   return 0;
 }
 
-// runs when button Row 2, column 2 is clicked
+// Run when row 2, column 2 button is clicked
 int on_button22_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-// play sound
+// Play sound
   play_sound("select.wav");
 
 
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(1, 1, buttonTemp);
   return 0;
 }
 
-// runs when button Row 2, column 3 is clicked
+// Run when row 2, column 3 button is clicked
 int on_button23_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-// play sound
+  // Play sound
   play_sound("select.wav");
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(1, 2, buttonTemp);
   return 0;
 }
 
-// runs when button Row 3, column 1 is clicked
+// Run when row 3, column 1 button is clicked
 int on_button31_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-// play sound
+  // Play sound
   play_sound("select.wav");
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(2, 0, buttonTemp);
   return 0;
 }
 
-// runs when button Row 3, column 2 is clicked
+// Run when row 3, column 2 button is clicked
 int on_button32_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-// play sound
+  // Play sound
   play_sound("select.wav");
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(2, 1, buttonTemp);
   return 0;
 }
 
-// runs when button Row 3, column 3 is clicked
+// Run when row 3, column 3 button is clicked
 int on_button33_clicked(GtkWidget *click_button, gpointer user_data)
 {
-  // assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
+  // Assign the generic user_data pointer to a GtkButton pointer for set_playermove function later
   GtkButton *buttonTemp = (GtkButton *)user_data;
-// play sound
+  // Play sound
   play_sound("select.wav");
-  // run seet_playermove function to set the player click on the board and gamme
+  // Run seet_playermove function to set the player click on the board and gamme
   set_playermove(2, 2, buttonTemp);
   return 0;
 }
 
-// Check if there are any row, column or diagonal are all either 0, 1 or 2 and return 0, 1 or 2
+// Check if any row, column, or diagonal is all 0, 1, or 2 and return 0, 1, or 2
 int anywinner(int a[3][3])
 {
   // initialise count for player 1 or player 2 win
@@ -521,7 +521,7 @@ int anywinner(int a[3][3])
   return 0;
 }
 
-// called after initialising mode is completed to reset buttons
+// Called after initialization is completed to reset buttons
 void resetgame()
 {
   int i, j;
@@ -552,7 +552,7 @@ void resetgame()
   }
 }
 
-// runs for the first time each button is pressed
+// Runs the first time each button is pressed
 void initialising(GtkButton *buttonInit, int i, int j)
 {
   // check if button already initialise
@@ -573,7 +573,7 @@ void initialising(GtkButton *buttonInit, int i, int j)
   }
 }
 
-// random number generator, in the range of 0 < x < n
+// Random number generator: 0 < x < n
 int randomNumberLessThan(int n)
 {
   return (double)rand() * n / RAND_MAX;

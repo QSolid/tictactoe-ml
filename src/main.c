@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#include <limits.h> //for MINMAX ALGO
+#include <limits.h> // For Minimax algorithm
 #include "minimax.h"
 #include "ML-config.h"
 #include "game_logic.h"
@@ -30,19 +30,19 @@ GtkLabel *gamemode;
 GtkLabel *game_stats;
 GtkLabel *statusbtn;
 
-// declaring global variables
+// Declaring global variables
 GtkButton *diffClick, *gameClick;
 GtkButton *button[3][3] = {{NULL, NULL, NULL}, {NULL, NULL, NULL}, {NULL, NULL, NULL}};
 
-// declaring global flags
+// Seclaring global flags
 int flag = 0, gameNotOver = 1, initialise = 0, statusFlag = 0, pressed[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 int moveCounter = 0, total_game_played = 0, player_1_win = 0, player_2_win = 0, game_draw = 0;
 
-// declaring game parameters
+// Seclaring game parameters
 int arr[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 int gameType = 0, gameDifficulty = 1;
 
-// main method, start of execution
+// Main method, start of execution
 int main(int argc, char *argv[])
 {
   //// Declare pointers for GTKBuilder and the main window widget
@@ -52,11 +52,11 @@ int main(int argc, char *argv[])
   gtk_init(&argc, &argv);
   init_ml_system(); // Initialise ML system
 
-  // Initializing GTKbuilder with .glade file
+  // Initialise GTKBuilder with the .glade file
   builder = gtk_builder_new();
   gtk_builder_add_from_file(builder, "assets/tictactoeUI.glade", NULL);
 
-  // connect to css file
+  // Connect to CSS file
   start = GTK_WIDGET(gtk_builder_get_object(builder, "startWindow"));
   GtkCssProvider *provider = gtk_css_provider_new();
   gtk_css_provider_load_from_path(provider, "assets/style.css", NULL);
@@ -64,18 +64,18 @@ int main(int argc, char *argv[])
                                             GTK_STYLE_PROVIDER(provider),
                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-  g_object_unref(provider); // release the css resource
+  g_object_unref(provider); // Release the CSS resource
 
-  // connect to the signal handlers definede in the glade file
+  // Connect to the signal handlers defined in the glade file
   gtk_builder_connect_signals(builder, NULL);
 
-  // Initializing main window widget with "startWindow" id from glade file (start page)
+  // Initialise main window widget with "startWindow" id from the glade file (start page)
   start = GTK_WIDGET(gtk_builder_get_object(builder, "startWindow"));
 
-  // release gtk builder resource by dereferencing the builder pointer
+  // Release GTK builder resources by dereferencing the builder pointer
   g_object_unref(builder);
 
-  // Showing main window widget
+  // Show the main window widget
   gtk_widget_show(start);
 
   // Open GTK main loop (waiting for user button presses)
@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
 // Main ML move function
 void makeMLMove() 
 {
-  if (!gameNotOver) return; // Return if game is already over to prevent additional moves
+  if (!gameNotOver) return; // Return if the game is already over to prevent additional moves
     
   // Convert and copy board state
   int mlBoard[BOARD]; // Create temporary 1D array to convert GUI's 2D board state (arr[3][3])
   int idx = 0;        // into ML's expected 1D format (array of 9 elements)
 
-  // Convert GUI board state (which uses 0=empty, 1=X, 2=O)
-  // to ML board state (which uses 0=empty, 1=X, -1=O)
+  // Convert GUI board state (0=empty, 1=X, 2=O)
+  // to ML board state (0=empty, 1=X, -1=O)
   for(int i = 0; i < 3; i++) 
   {
     for(int j = 0; j < 3; j++) 
@@ -116,26 +116,26 @@ void makeMLMove()
   }
 
   // Copy the converted board state to ML's global board state array
-  // This is necessary because BestMove() works with the global ml_board_state  
+  // Necessary because BestMove() works with the global ml_board_state  
   for(int i = 0; i < BOARD; i++) 
   {
     ml_board_state[i] = mlBoard[i];
   }
     
-    // Get ML's move for computer O perspective
-    BestMove(ml_board_state, init_weight, -1);
+    // Get ML's move from computer O perspective
+    BestMove(ml_board_state, init_weight, ML_O);
     
   // Find move position and update GUI
   for(int i = 0; i < BOARD; i++) 
   {
     if(ml_board_state[i] != mlBoard[i]) 
     {
-      // Convert 1D position back to 2D coordinates for GUI board
+      // Convert 1D position back to 2D coordinates for the GUI board
       int row = i / 3;  // Integer division by 3 gives row number
       int col = i % 3;  // Remainder gives column number
       arr[row][col] = 2;  // Update GUI board state with computer's move (O is represented as 2)
 
-      // Create array of GUI button pointers for easy access
+      // Create an array of GUI button pointers for easy access
       GtkButton *buttons[3][3] = {
       {GTK_BUTTON(button11), GTK_BUTTON(button12), GTK_BUTTON(button13)},
       {GTK_BUTTON(button21), GTK_BUTTON(button22), GTK_BUTTON(button23)},
@@ -147,7 +147,7 @@ void makeMLMove()
       // Mark position as occupied and increment move counter
       pressed[row][col] = 1;
       moveCounter++;
-      // Check if game has ended (win or draw)
+      // Check if the game has ended (win or draw)
       int winner = anywinner(arr);
       if (winner || moveCounter == 9) 
       {
@@ -161,7 +161,7 @@ void makeMLMove()
         }
         return;
       }
-      // Game continues - update status to indicate next player's turn
+      // Game continues: update status to indicate the next player's turn
       update_game_status("PLAYER 1'S MOVE", 4);
       break;  // Exit loop after processing the move
     }

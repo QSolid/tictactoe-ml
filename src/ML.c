@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 
-// Declare external variables from main.c for GTK integration
+// External variables from main.c for GTK integration
 extern GtkWidget *button11;
 extern GtkWidget *button12;
 extern GtkWidget *button13;
@@ -25,24 +26,24 @@ extern int gameNotOver;
 extern int gameDifficulty;
 
 // Global ML data structures                                        
-int board_feature[FEATURES];                        // Array for feature
+int board_feature[FEATURES];                        // Feature array
 int ml_board_state[BOARD] = {0};                    // ML board representation
 float init_weight[FEATURES];                        // Initial weights
 
-int moves[BOARD][BOARD +1];                         // For moves that are still available 
+int moves[BOARD][BOARD +1];                         // Possible moves matrix 
 
-// Initialize ML system
+// Initialise ML system
 void init_ml_system() 
 {
-    // Initialize weights
+    // Initialise weights
     readweights();
 }
 
-void get_board_features(int state[BOARD],int Cplayer) // Set the features of the board, use with weights to train ML
+void get_board_features(int state[BOARD],int Cplayer) // Set board features; used with weights to train ML
 {
     /*
         x0 = 1  # Constant
-        x1 = 0  # Number of rows/columns/diagonals with two of our own pieces and one emtpy field
+        x1 = 0  # Number of rows/columns/diagonals with two of our own pieces and one empty field
         x2 = 0  # Number of rows/columns/diagonals with two of opponent's pieces and one empty field
         x3 = 0  # Is our own piece on the center field
         x4 = 0  # Number of own pieces in corners
@@ -51,7 +52,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
     */
     int x0 = 1, x1 = 0 , x2 = 0, x3 = 0, x4 = 0, x5 = 0, x6 = 0;
 
-    // Convert 1D array to 2D board for easier processing
+    // Convert 1D array to a 2D board for easier processing
     int CBoard[3][3];
     for(int i = 0; i < 3; i++) {
         for(int j = 0; j < 3; j++) {
@@ -149,7 +150,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         }
     }
     
-    // Set features based on the snippet
+    // Set features
     board_feature[0] = x0;
     board_feature[1] = x1;
     board_feature[2] = x2;
@@ -159,7 +160,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
     board_feature[6] = x6;
 }
 
-// Evaluate and assign value to board state
+// Evaluate and assign value to the board state
 float Eval_Approx(int features[FEATURES], float weight[FEATURES])
 {
     float value =0;
@@ -174,26 +175,27 @@ float Eval_Approx(int features[FEATURES], float weight[FEATURES])
 // Get the best move the AI can make using the trained weights
 void BestMove(int state[BOARD],float weights[FEATURES],int player)
 {
-    float best_val = -9999; // Track highest evaluation score
+    float best_val = (player == ML_X) ? -FLT_MAX : FLT_MAX; // Maximize for X, minimize for O
     int best_move = -1;     // Track position of best move found
     
-    // Single pass through board to find best move
+    // Single pass through the board to find the best move
     for(int i = 0; i < BOARD; i++) {
         if(state[i] == 0) {  // If empty space
             // Make move
             state[i] = player;
             
-            // Calculate features and evaluate
-            get_board_features(state, player);
+            // Calculate features from X perspective and evaluate
+            get_board_features(state, ML_X);
             float val = Eval_Approx(board_feature, weights);
             
             // Undo move
             state[i] = 0;
             
-            // Update best if needed
-            if(val > best_val) {
-                best_val = val;
-                best_move = i;
+            // Update best based on current player
+            if (player == ML_X) {
+                if (val > best_val) { best_val = val; best_move = i; }
+            } else { // ML_O
+                if (val < best_val) { best_val = val; best_move = i; }
             }
         }
     }
@@ -210,7 +212,7 @@ void readweights()
     FILE *Read_weights = fopen(WEIGHTS,"r");
     if(Read_weights == NULL)
     {
-        printf("File Does not exist");
+        printf("File does not exist");
         exit(1);
     }
 

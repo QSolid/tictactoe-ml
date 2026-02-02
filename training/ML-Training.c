@@ -3,15 +3,17 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <float.h>
+#include <time.h>
 #include "Training-config.h"
 
 /*
     ML training using linear regression, with comparison functions such as:
-        - Classfication such as Minimum Mean Squared error, Accuracy, True Positve/Negatives, False Positives/Negatives
-        - Playing against MinMax Algorithm
-        - PLaying against Random Inputs
-    - Creates a txt file that contains the 7 weights used in the main program
-    - Abiity to play against trained model through CLI
+        - Classification metrics: Mean Squared Error (MMSE), Accuracy, True Positives/Negatives, False Positives/Negatives
+        - Play against Minimax algorithm
+        - Play against random inputs
+    - Creates a text file that contains the 7 weights used in the main program
+    - Ability to play against the trained model through the CLI
 */
 int main()
 {
@@ -74,9 +76,9 @@ void extract(char *file_p, int a[SIZE][BOARD + 1])
     while(fgets(buffer,sizeof(buffer),data))
     {
         
-        // Split string by ,
+        // Split string by comma
         char *token = strtok(buffer,",");
-        // Iterate inner array to store values of line
+        // Iterate inner array to store values from the line
         int i =0;
         while(token)
         {
@@ -84,10 +86,10 @@ void extract(char *file_p, int a[SIZE][BOARD + 1])
             a[count][i] = convert_input(token);
             i++;
 
-            // Dumb way; iterate count for next line of values to be stored
+            // Increment count when a full line of values has been stored
             if(i == 10)
             {
-                // vomit out data stored in array
+                // Debug: print stored data
                 // for(int j = 0; j < i;j++)
                 // {
                 //     printf("x[%d][%d] = %d\n", count,j, a[count][j]);
@@ -104,7 +106,7 @@ void extract(char *file_p, int a[SIZE][BOARD + 1])
 }
 
 
-// Converts x,o,b,+ve and -ve into integers to use for linear regression
+// Converts x, o, b, +ve and -ve into integers for linear regression
 int convert_input(const char *input)
 {
     if (strcmp(input, "positive\n") == 0) 
@@ -126,13 +128,13 @@ int convert_input(const char *input)
             case 'b':
                 return 0;
             default:
-                return 3; // Return 3 mean something went wrong
+                return 3; // Return 3 means something went wrong
         }
     }
     return 3;
 }
 
-// Check if board state : win lose draw or running
+// Check if board state: win, lose, draw, or running
 int BoardState(int state[BOARD])
 {
     int board_state =0;
@@ -156,7 +158,7 @@ int BoardState(int state[BOARD])
     return board_state;    
 }
 
-// Categorise data into win loss and draw
+// Categorize data into win, loss, and draw
 void cat_data()
 {
     for(int i=0; i< SIZE; i++)
@@ -200,9 +202,33 @@ void cat_data()
 
 }
 
+// Helper to shuffle class-specific arrays (top-level C function)
+void shuffle_rows(int a[][BOARD + 1], int count)
+{
+    for(int i = count - 1; i > 0; i--)
+    {
+        int j = rand() % (i + 1);
+        // swap row i and j
+        for(int k = 0; k <= BOARD; k++)
+        {
+            int tmp = a[i][k];
+            a[i][k] = a[j][k];
+            a[j][k] = tmp;
+        }
+    }
+}
+
 // Split data into training and testing
 void split_data()
 {
+    // Seed RNG for shuffling
+    srand((unsigned)time(NULL));
+
+    // Randomise per-class to preserve class proportions in splits
+    shuffle_rows(win_data, wins);
+    shuffle_rows(loss_data, lose);
+    shuffle_rows(draw_data, draw);
+
     // 80% split for training
     int Training_Wins = wins * 0.8;
     int Training_Lose = lose * 0.8;
@@ -284,20 +310,20 @@ void split_data()
 
 
 
-void get_board_features(int state[BOARD],int Cplayer) // Set the features of the board, use with weights to train ML
+void get_board_features(int state[BOARD],int Cplayer) // Set board features; used with weights to train ML
 {
     /*
         x0 = 1  # Constant
-        x1 = 0  # Number of rows/columns/diagonals with two of our own pieces and one emtpy field
+        x1 = 0  # Number of rows/columns/diagonals with two of our own pieces and one empty field
         x2 = 0  # Number of rows/columns/diagonals with two of opponent's pieces and one empty field
         x3 = 0  # Is our own piece on the center field
         x4 = 0  # Number of own pieces in corners
         x5 = 0  # Number of rows/columns/diagonals with one own piece and two empty fields
         x6 = 0  # Number of rows/columns/diagonals with three own pieces
-        snippet from github: https://github.com/Skyy93/TicTacToeRegressionBot/blob/master/player.py
+        Snippet source: https://github.com/Skyy93/TicTacToeRegressionBot/blob/master/player.py
     */
     int x0=1,x1=0,x2=0,x3=0,x4=0,x5=0,x6=0;
-    //create a 2d array(grid) to capture how the board currently looks like
+    // Create a 2D grid representing the current board
     int CBoard[3][3];
     CBoard[0][0] = state[0];
     CBoard[0][1] = state[1];
@@ -309,10 +335,10 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
     CBoard[2][1] = state[7];
     CBoard[2][2] = state[8];
 
-    //loop thru board row by row
+    // Loop through the board row by row
     for(int row =0; row < 3;row++)
     {
-    //counter for player,opponent and empty row/column
+    // Counters for player/opponent/empty in row/column
     int player_row =0,player_col =0,oppo_row=0,oppo_col =0, empty_row =0, empty_col=0;
     for (int col=0; col<3;col++)
     {
@@ -347,7 +373,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         //check x3 and x4
         if(row == col)
         {
-            //check center
+            // Check center
             if(row == 1 && col == 1)
             {
                 if(CBoard[row][col] == Cplayer)
@@ -357,7 +383,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
             }
             else
             {
-                //how many piece is in the corner
+                // Count how many pieces are in the corner
                 if(CBoard[row][col] == Cplayer)
                 {
                     x4++;
@@ -367,7 +393,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
 
         if(row + col ==2)
         {
-            if(row != 1 && col != 1)
+            if (row != 1 && col != 1)
             {
                 if(CBoard[row][col] == Cplayer)
                 {
@@ -376,7 +402,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
             }
         }
 
-        //check x1 rows and col
+        // Check x1 rows and columns
         if(player_row == 2 && empty_row ==1)
         {
             x1++;
@@ -385,7 +411,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         {
             x1++;
         }
-        //check x2 rows & col
+        // Check x2 rows and columns
         if(oppo_row == 2 && empty_row ==1)
         {
             x2++;
@@ -394,7 +420,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         {
             x2++;
         }
-        //check x5 rows & col
+        // Check x5 rows and columns
         if(player_row == 1 && empty_row == 2)
         {
             x5++;
@@ -403,7 +429,7 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         {
             x5++;
         }
-        //check x6 rows & col
+        // Check x6 rows and columns
         if(player_row ==3)
         {
             x6++;
@@ -414,24 +440,24 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
         }
     }
     }
-    //check diagonals
+    // Check diagonals
     for(int i =0; i<2;i++)
     {
         int player_dia =0, empty_dia=0, oppo_dia=0,temp=0;
         for(int j=0; j<3;j++)
         {
-            //set temp value of board
+            // Set temporary value from the board
             if(i == 0)
             {
-                //bottom left to top right dia
+                // Bottom-left to top-right diagonal
                 temp = CBoard[2-j][j];
             }
             else
             {
-                //top left to bottom right dia
+                // Top-left to bottom-right diagonal
                 temp = CBoard[j][j];
             }
-            //check dia
+            // Check diagonal counts
             if(temp == Cplayer)
             {
                 player_dia++;
@@ -445,28 +471,28 @@ void get_board_features(int state[BOARD],int Cplayer) // Set the features of the
                 oppo_dia++;
             }
         }
-        //check x1
+        // Check x1
         if(player_dia == 2&& empty_dia == 1)
         {
             x1++;
         }
-        //check x2
+        // Check x2
         if(oppo_dia ==2 && empty_dia ==1)
         {
             x2++;
         }
-        //check x5
+        // Check x5
         if(player_dia ==1 && empty_dia==2)
         {
             x5++;
         }
-        //check x6
+        // Check x6
         if(player_dia ==3)
         {
             x6++;
         }
     }
-    //set features based on the snippet
+    // Set features based on the referenced snippet
     board_feature[0] = x0;
     board_feature[1] = x1;
     board_feature[2] = x2;
@@ -492,14 +518,14 @@ void updateWeight(float LR, int features[FEATURES], float weights[FEATURES],floa
 {
     for(int i = 0; i < FEATURES; i++)
     {
-        weights[i] = weights[i] + LR * (y-yHat) * features[i]; // LR is the learning rate/speed, y is the result and yhat is the predicted result
+        weights[i] = weights[i] + LR * (y-yHat) * features[i]; // LR is the learning rate; y is the result and yHat is the prediction
     }
 }
 
-// Unified function to process both training and testing model data
-void processModelData (const char* phrase, int dataset[][BOARD + 1], int size, float weight[FEATURES])
+// Unified function to process model data; control updates and writes via flags
+void processModelData (const char* phase, int dataset[][BOARD + 1], int size, float weight[FEATURES], int updateWeights, int writeWeights)
 {
-    int Com_player = 1;
+    int Com_player = ML_X;
     float Yhat = -1, y = 0, MMSE = 0;
 
     // Error counting
@@ -516,18 +542,24 @@ void processModelData (const char* phrase, int dataset[][BOARD + 1], int size, f
         y = dataset[i][9];
         
         MMSE += pow(y - Yhat, 2);                                               // Calculate Minimum Mean Square Error
-        updateWeight(learning_rate, board_feature, weight, y, Yhat);                // Update ML weight
-        evaluateModel(Yhat, y, &TP, &TN, &FP, &FN, &total_errors, errors, i);   // Evaluate training model metrics
+        if (updateWeights)
+        {
+            updateWeight(learning_rate, board_feature, weight, y, Yhat);        // Update ML weight (training only)
+        }
+        evaluateModel(Yhat, y, &TP, &TN, &FP, &FN, &total_errors, errors, i);   // Evaluate model metrics
     }
 
     // Calculate metrics
     MMSE /= size;  // Divide by dataset size to get average
 
-    //Write weights
-    writeweights();
+    // Write weights if requested (e.g., after training)
+    if (writeWeights)
+    {
+        writeweights();
+    }
     
     // Print results
-    printModelMetrics("Training", MMSE, total_errors, size, TP, TN, FP, FN);
+    printModelMetrics(phase, MMSE, total_errors, size, TP, TN, FP, FN);
     free(errors);   // Free allocated memory
 }
 
@@ -606,20 +638,43 @@ void printModelMetrics(const char* phase, float MMSE, int total_errors, int size
 // Train model base on training dataset & evaluate
 void trainModel(int training_set[TRAINING_SIZE][BOARD +1],float weight[FEATURES])
 {
-    processModelData("Training", training_set, TRAINING_SIZE, weight);
+    // Epoch-based training: shuffle and update weights over multiple passes,
+    // then evaluate and write weights once at the end to avoid excessive logging.
+    int Com_player = ML_X;
+    for (int epoch = 0; epoch < EPOCH; epoch++)
+    {
+        // Optional: shuffle per-epoch for better generalization
+        shuffle_rows(training_set, TRAINING_SIZE);
+
+        // Single pass weight updates across the training set
+        for (int i = 0; i < TRAINING_SIZE; i++)
+        {
+            // Compute features and prediction
+            get_board_features(training_set[i], Com_player);
+            float Yhat = Eval_Approx(board_feature, weight);
+            float y = training_set[i][9];
+
+            // Gradient update
+            updateWeight(learning_rate, board_feature, weight, y, Yhat);
+        }
+    }
+
+    // Final evaluation and write-out (no further updates during evaluation)
+    processModelData("Training", training_set, TRAINING_SIZE, weight, 0, 1);
 }
 
 // Test model using training weights & evaluate
 void testModel(int testing_set[TESTING_SIZE][BOARD +1],float weight[FEATURES])
 {
-    processModelData("Testing", testing_set, TESTING_SIZE, weight);
+    processModelData("Testing", testing_set, TESTING_SIZE, weight, 0, 0);
 }
 
-//get the best move the AI can make using the trained weights
+// Get the best move the AI can make using the trained weights
 void BestMove(int state[BOARD],float weights[FEATURES],int player)
 {
     int moveC = 0, best_move= 0;
-    float val = -9999, best_val = -9999;
+    float val = 0.0f;
+    float best_val = (player == PLAYER_X) ? -FLT_MAX : FLT_MAX;
     
     //Set board to 0 and label to -1
     for (int i = 0; i < BOARD; i++) {
@@ -656,27 +711,27 @@ void BestMove(int state[BOARD],float weights[FEATURES],int player)
     {
         if(moves[i][9] != -1)
         {
-            get_board_features(moves[i],player);
-            val = Eval_Approx(board_feature,init_weight);
-            //evaluate  best move
-            if(best_val < val)
+            // Always evaluate features from X's perspective
+            get_board_features(moves[i], ML_X);
+            val = Eval_Approx(board_feature, weights);
+            // Maximize if current player is X; minimize if O
+            if ((player == PLAYER_X && val > best_val) || (player == PLAYER_O && val < best_val))
             {
                 best_val = val;
                 best_move = moves[i][9];
             }
         }
         else
-            {
-                break;
-            }
-        
+        {
+            break;
+        }
     }
-    //set best move to board
+    // Set best move to board
     board_state[best_move] = player;
     //printBoard(board_state);
 }
 
-//print board to cli
+// Print board to CLI
 void printBoard(int state[BOARD])
 {
     printf("  %2d  |  %2d  |  %2d\n",state[0],state[1],state[2]);
@@ -686,7 +741,7 @@ void printBoard(int state[BOARD])
     printf("  %2d  |  %2d  |  %2d\n\n",state[6],state[7],state[8]);
 }
 
-//reset the board for next game
+// Reset the board for the next game
 void reset()
 {
     for (int i = 0; i < BOARD; i++) 
@@ -695,7 +750,7 @@ void reset()
     }
 }
 
-//get player input
+// Get player input
 void playerInput(int playerNo)
 {
     int player_move = 0;
@@ -722,7 +777,7 @@ void playerInput(int playerNo)
     } while (1);
 }
 
-//player vs ML
+// Player vs ML
 void playAgainstML()
 {
 
@@ -735,7 +790,7 @@ void playAgainstML()
         reset();
         board_status = 9;
 
-        // Alternate between starting player
+        // Alternate the starting player
         if (game_no % 2 == 0) {
             current_player = 1;
             turn = 0;
@@ -811,7 +866,7 @@ void playAgainstML()
         }
     
 
-        // Display score after each game session
+        // Display the score after each game session
         printf("\nScores:\n");
         printf("ML Wins: %d\n", MLWins);
         printf("Your Wins: %d\n", PlayerWins);
@@ -819,14 +874,14 @@ void playAgainstML()
         //Increment game_no so that it alternates between player and AI
         game_no++;
 
-        // Prompt the user if they want to play again
+        // Prompt the user to play again
         printf("\nDo you want to play again? (y/n): ");
         scanf(" %c", &play_again); 
 
     } while (play_again == 'y' || play_again == 'Y');
 }
 
-//evaluate between ML and MinMax Algorithm
+// Evaluate ML vs Minimax algorithm
 void MLvsMinMAx(int length)
 {
     // 1 is ML 2 is MinMax
@@ -837,7 +892,7 @@ void MLvsMinMAx(int length)
         reset();
         board_status=9;
 
-        //alternate between starting player
+        // Alternate the starting player
         if(game_no % 2 ==0)
         {
             current_player = 1;
@@ -870,7 +925,7 @@ void MLvsMinMAx(int length)
                 {
                     current_player =1;
                 }
-                //minmax algo here
+                // Minimax move
                 printf("MMX turn\n");
                 board_state[MMXBest(board_state,current_player)] = current_player;
                 //get board status
@@ -931,7 +986,7 @@ void MLvsMinMAx(int length)
             }
 
         }
-        //print and add to counter of who won
+        // Print result and increment the corresponding counter
         if(board_status == 0)
         {
             printBoard(board_state);
@@ -989,7 +1044,7 @@ int MMXBest(int state[BOARD],int CurrentPlayer)
             }
         }
     }
-    return (bestRow * 3 + bestCol); //converts 2d array into 1d
+    return (bestRow * 3 + bestCol); // Converts 2D array indices into 1D
     
 }
 
@@ -998,13 +1053,13 @@ int MMXBest(int state[BOARD],int CurrentPlayer)
 int minimax(int board[3][3], int depth, int isMaximizingPlayer,int CurrentPlayer) {
     int score = evaluate(board,CurrentPlayer);
 
-    // Choosing 10 or -10 is enough for tuning as depth would have to +- score having 1 or -1 would make it difficult adjust the difficulty using depth
+    // Using 10/-10 for win/loss works with depth adjustments; using ±1 makes tuning via depth more difficult
     if (score == 10) return score - depth;
     if (score == -10) return score + depth;
-    // Stops the checking if there is no moves anymore || If depth = maxdepth stop running
+    // Stop if there are no moves left or if depth reaches the limit
     if (!isMovesLeft(board) || depth == 9) return 0;
-    //minimax algorithm aims to maximise the AI score while ensuring that the player would obtain the lowest score
-    //minimax would need identify who is the player and 
+    // Minimax aims to maximize the current player's score while minimizing the opponent's
+    // Minimax needs to identify the current player
     if (isMaximizingPlayer) {
         int best = INT_MIN; //Ai starts with the lowest score
         for (int i = 0; i < 3; i++) {
@@ -1035,7 +1090,7 @@ int minimax(int board[3][3], int depth, int isMaximizingPlayer,int CurrentPlayer
     }
 }
 
-//Evaluates the current board state and returns a score.
+// Evaluates the current board state and returns a score
 int evaluate(int board[3][3],int CurrentPlayer) {
    //Checking rows and column for win
     for (int i = 0; i < 3; i++) {
@@ -1060,7 +1115,7 @@ int evaluate(int board[3][3],int CurrentPlayer) {
     return 0; //return draw
 }
 
-//Checks if there are any empty cells left on the board.
+// Checks if there are any empty cells left on the board
 int isMovesLeft(int board[3][3]) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -1070,7 +1125,7 @@ int isMovesLeft(int board[3][3]) {
     return 0;
 }
 
-//randomly comes up with moves 
+// Selects a random legal move
 void randomInput(int state[BOARD], int player)
 {
     int randomMove;
@@ -1083,7 +1138,7 @@ void randomInput(int state[BOARD], int player)
     state[randomMove] = player;
 }
 
-//evaluate ML vs random Inputs
+// Evaluate ML vs random inputs
 void MLvsRandom(int length)
 {
     // 1 is ML 2 is random
@@ -1231,13 +1286,13 @@ void writeweights()
     fclose(writeOut);
 }
 
-void TrainwithItself(int cycles, float wieght[FEATURES])
+void TrainwithItself(int cycles, float weight[FEATURES])
 {
     // 1 is controlled ML 2 is opponents
     int board_status =9, current_player=0,controlled_player=1,result=0;
     float actual_value,predicted_value,outcome;
 
-    int temp_features[FEATURES] = {}; //temp features to be used by controlled ML so the weight dont get insane
+    int temp_features[FEATURES]; //temp features to be used by controlled ML
 
     //pit ml vs ml for no of cycle
     for(int i=0; i<cycles;i++)
