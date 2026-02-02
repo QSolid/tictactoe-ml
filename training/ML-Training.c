@@ -504,7 +504,7 @@ void BestMove(int state[BOARD],float weights[FEATURES],int player)
     }
 
     if (best_index != -1) {
-        board_state[best_index] = player; // write back in training's encoding (1 or 2)
+        board_state[best_index] = player;
     }
     //printBoard(board_state);
 }
