@@ -21,15 +21,14 @@
 void extract(char*, int a[SIZE][BOARD + 1]);     // extract file that contains the data that is to be used
 int convert_input(const char *input);            // convert input of the data file into machine usable format
 int BoardState(int state[BOARD]);                // check if board is running 
-void cat_data();                                 //categorise data into wins lose and draw
-void split_data();                               //split data into training and testing array without reduplicating the same data point
-void get_board_features(int state[BOARD],int Cplayer); // Set the features of the board, use with weights to train ML
-float Eval_Approx(int features[FEATURES], float weight[FEATURES]); // Evaluate and assign value to board state
+void cat_data();                                 // categorise data into wins lose and draw
+void split_data();                               // split data into training and testing array without reduplicating the same data point
+// Feature extraction and evaluation are provided via ../src/ml_shared.h
 void updateWeight(float LR, int features[FEATURES], float weights[FEATURES],float y, float yHat); // Update weight to be used for ML
 void writeweights();
 void trainModel(int training_set[TRAINING_SIZE][BOARD +1],float weight[FEATURES]); // Train model base on training dataset & evaluat
 void testModel(int testing_set[TESTING_SIZE][BOARD +1],float weight[FEATURES]); // Test model using training weights & evaluate
-void BestMove(int state[BOARD],float weights[FEATURES],int player); //get the best move the AI can make using the trained weights
+void BestMove(int state[BOARD],float weights[FEATURES],int player); // Get the best move the AI can make using the trained weights
 void evaluateModel(float Yhat, float y, int* TP, int* TN, int* FP, int* FN, int* total_errors, int* errors, int index); // Function to evaluate model metrics
 void printModelMetrics(const char* phase, float MMSE, int total_errors, int size, int TP, int TN, int FP, int FN); // Function to print model metrics
 void processModelData(const char* phase, int dataset[][BOARD + 1], int size, float weight[FEATURES], int updateWeights, int writeWeights); // Unified function to process model data
@@ -41,16 +40,16 @@ void shuffle_rows(int a[][BOARD + 1], int count);
 void printBoard(int state[BOARD]); // Print board to CLI
 void reset(); // Reset board for another game
 void playerInput(int playerNo); // get player's input
-void playAgainstML(); //player vs ML
-void MLvsMinMAx(int length); //evaluate between ML and MinMax Algorithm
-void randomInput(int state[BOARD], int player); //randomly comes up with moves 
-void MLvsRandom(int length); //evaluate between ML and Random input
+void playAgainstML(); // Player vs ML
+void MLvsMiniMax(int length); // Evaluate between ML and MiniMax Algorithm
+void randomInput(int state[BOARD], int player); // Randomly comes up with moves 
+void MLvsRandom(int length); // Evaluate between ML and Random input
 
-//MinMax Prototypes
-int MMXBest(int state[BOARD],int CurrentPlayer); //get the best move MinMax Algo can make
-int minimax(int board[3][3], int depth, int isMaximizingPlayer,int CurrentPlayer); //recursive function to get best move
-int evaluate(int board[3][3],int CurrentPlayer); //Evaluates the current board state and returns a score.
-int isMovesLeft(int board[3][3]); //Checks if there are any empty cells left on the board.
+//MiniMax Prototypes
+int MMXBest(int state[BOARD],int CurrentPlayer); // Get the best move MiniMax Algo can make
+int minimax(int board[3][3], int depth, int isMaximizingPlayer,int CurrentPlayer); // Recursive function to get best move
+int evaluate(int board[3][3],int CurrentPlayer); // Evaluates the current board state and returns a score.
+int isMovesLeft(int board[3][3]); // Checks if there are any empty cells left on the board.
 
 // Global variables
 int dataset[SIZE][BOARD + 1]; // Full dataset

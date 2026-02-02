@@ -19,8 +19,7 @@ extern float init_weight[FEATURES];         // Declaration of initial weights
 
 /* ML Prototypes */
 void init_ml_system(void); // Initialise ML functions
-void get_board_features(int state[BOARD],int Cplayer); // Set board features; used with weights to train ML
-float Eval_Approx(int features[FEATURES], float weight[FEATURES]); // Evaluate and assign value to board state
+// Feature extraction and evaluation are provided via ml_shared.h
 void BestMove(int state[BOARD],float weights[FEATURES],int player); // Get the best move the AI can make using the trained weights
 void readweights();
 #endif

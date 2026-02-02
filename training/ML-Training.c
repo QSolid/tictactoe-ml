@@ -6,6 +6,7 @@
 #include <float.h>
 #include <time.h>
 #include "Training-config.h"
+#include "../src/ml_shared.h"
 
 /*
     ML training using linear regression, with comparison functions such as:
@@ -36,13 +37,13 @@ int main()
     //choice of what to do we ML
     while (choice != 1 && choice != 2 && choice !=3 && choice !=4)
     {
-        printf("Select one of the following:\n1) Evaluate against MinMax (1000 games)\n2) Evaluate against Random (1000 games)\n3) Play against ML\n4) Exit\nEnter a choice (1-4): ");
+        printf("Select one of the following:\n1) Evaluate against MiniMax (1000 games)\n2) Evaluate against Random (1000 games)\n3) Play against ML\n4) Exit\nEnter a choice (1-4): ");
         scanf("%d",&choice);
     }
 
     if(choice == 1)
     {
-        MLvsMinMAx(GAME_LENGTH);
+        MLvsMiniMax(GAME_LENGTH);
     }
     else if(choice ==2)
     {
@@ -310,208 +311,7 @@ void split_data()
 
 
 
-void get_board_features(int state[BOARD],int Cplayer) // Set board features; used with weights to train ML
-{
-    /*
-        x0 = 1  # Constant
-        x1 = 0  # Number of rows/columns/diagonals with two of our own pieces and one empty field
-        x2 = 0  # Number of rows/columns/diagonals with two of opponent's pieces and one empty field
-        x3 = 0  # Is our own piece on the center field
-        x4 = 0  # Number of own pieces in corners
-        x5 = 0  # Number of rows/columns/diagonals with one own piece and two empty fields
-        x6 = 0  # Number of rows/columns/diagonals with three own pieces
-        Snippet source: https://github.com/Skyy93/TicTacToeRegressionBot/blob/master/player.py
-    */
-    int x0=1,x1=0,x2=0,x3=0,x4=0,x5=0,x6=0;
-    // Create a 2D grid representing the current board
-    int CBoard[3][3];
-    CBoard[0][0] = state[0];
-    CBoard[0][1] = state[1];
-    CBoard[0][2] = state[2];
-    CBoard[1][0] = state[3];
-    CBoard[1][1] = state[4];
-    CBoard[1][2] = state[5];
-    CBoard[2][0] = state[6];
-    CBoard[2][1] = state[7];
-    CBoard[2][2] = state[8];
-
-    // Loop through the board row by row
-    for(int row =0; row < 3;row++)
-    {
-    // Counters for player/opponent/empty in row/column
-    int player_row =0,player_col =0,oppo_row=0,oppo_col =0, empty_row =0, empty_col=0;
-    for (int col=0; col<3;col++)
-    {
-        //row count for all 3
-        if(CBoard[row][col] == Cplayer)
-        {
-            player_row++;
-        }
-        else if(CBoard[row][col] == 0)
-        {
-            empty_row++;
-        }
-        else
-        {
-            oppo_row++;
-        }
-
-        //column count for all 3
-        if(CBoard[col][row] == Cplayer)
-        {
-            player_col++;
-        }
-        else if(CBoard[col][row] == 0)
-        {
-            empty_col++;
-        }
-        else
-        {
-            oppo_col++;
-        }
-
-        //check x3 and x4
-        if(row == col)
-        {
-            // Check center
-            if(row == 1 && col == 1)
-            {
-                if(CBoard[row][col] == Cplayer)
-                {
-                    x3++;
-                }
-            }
-            else
-            {
-                // Count how many pieces are in the corner
-                if(CBoard[row][col] == Cplayer)
-                {
-                    x4++;
-                }
-            }
-        }
-
-        if(row + col ==2)
-        {
-            if (row != 1 && col != 1)
-            {
-                if(CBoard[row][col] == Cplayer)
-                {
-                    x4++;
-                }
-            }
-        }
-
-        // Check x1 rows and columns
-        if(player_row == 2 && empty_row ==1)
-        {
-            x1++;
-        }
-        if(player_col == 2 && empty_col ==1)
-        {
-            x1++;
-        }
-        // Check x2 rows and columns
-        if(oppo_row == 2 && empty_row ==1)
-        {
-            x2++;
-        }
-        if(oppo_col ==2 && empty_col ==1)
-        {
-            x2++;
-        }
-        // Check x5 rows and columns
-        if(player_row == 1 && empty_row == 2)
-        {
-            x5++;
-        }
-        if(player_col == 1 && empty_col == 2)
-        {
-            x5++;
-        }
-        // Check x6 rows and columns
-        if(player_row ==3)
-        {
-            x6++;
-        }
-        if(player_col == 3)
-        {
-            x6++;
-        }
-    }
-    }
-    // Check diagonals
-    for(int i =0; i<2;i++)
-    {
-        int player_dia =0, empty_dia=0, oppo_dia=0,temp=0;
-        for(int j=0; j<3;j++)
-        {
-            // Set temporary value from the board
-            if(i == 0)
-            {
-                // Bottom-left to top-right diagonal
-                temp = CBoard[2-j][j];
-            }
-            else
-            {
-                // Top-left to bottom-right diagonal
-                temp = CBoard[j][j];
-            }
-            // Check diagonal counts
-            if(temp == Cplayer)
-            {
-                player_dia++;
-            }
-            else if(temp == 0)
-            {
-                empty_dia++;
-            }
-            else
-            {
-                oppo_dia++;
-            }
-        }
-        // Check x1
-        if(player_dia == 2&& empty_dia == 1)
-        {
-            x1++;
-        }
-        // Check x2
-        if(oppo_dia ==2 && empty_dia ==1)
-        {
-            x2++;
-        }
-        // Check x5
-        if(player_dia ==1 && empty_dia==2)
-        {
-            x5++;
-        }
-        // Check x6
-        if(player_dia ==3)
-        {
-            x6++;
-        }
-    }
-    // Set features based on the referenced snippet
-    board_feature[0] = x0;
-    board_feature[1] = x1;
-    board_feature[2] = x2;
-    board_feature[3] = x3;
-    board_feature[4] = x4;
-    board_feature[5] = x5;
-    board_feature[6] = x6;
-}
-
-// Evaluate and assign value to board state
-float Eval_Approx(int features[FEATURES], float weight[FEATURES])
-{
-    float value =0;
-    for(int i=0; i<FEATURES;i++)
-    {
-        value += features[i] * weight[i];
-    }
-    return value;
-}
+// get_board_features and Eval_Approx are provided by src/ml_shared.h
 
 // Update weight to be used for ML
 void updateWeight(float LR, int features[FEATURES], float weights[FEATURES],float y, float yHat)
@@ -672,62 +472,10 @@ void testModel(int testing_set[TESTING_SIZE][BOARD +1],float weight[FEATURES])
 // Get the best move the AI can make using the trained weights
 void BestMove(int state[BOARD],float weights[FEATURES],int player)
 {
-    int moveC = 0, best_move= 0;
-    float val = 0.0f;
-    float best_val = (player == PLAYER_X) ? -FLT_MAX : FLT_MAX;
-    
-    //Set board to 0 and label to -1
-    for (int i = 0; i < BOARD; i++) {
-        for (int j = 0; j < BOARD + 1; j++) {
-            if (j == 9) 
-            {
-                moves[i][9] = -1;
-            }
-            else 
-            {
-                // Reset
-                moves[i][j] = 0;
-            }
-        }
+    int best_move = compute_best_move_depth1(state, weights, (player == PLAYER_X) ? ML_X : ML_O);
+    if (best_move != -1) {
+        board_state[best_move] = player;
     }
-
-    //set all possibles moves
-    for(int i=0; i<BOARD; i++)
-    {
-        if(state[i] == 0)
-        {
-            for(int j = 0; j<BOARD; j++)
-            {
-                moves[moveC][j] = state[j];
-            }
-            moves[moveC][i] = player;
-            moves[moveC][9] = i;
-            moveC++;
-        }
-    }
-
-    //Iterate through each possible move
-    for(int i =0;i<BOARD;i++)
-    {
-        if(moves[i][9] != -1)
-        {
-            // Always evaluate features from X's perspective
-            get_board_features(moves[i], ML_X);
-            val = Eval_Approx(board_feature, weights);
-            // Maximize if current player is X; minimize if O
-            if ((player == PLAYER_X && val > best_val) || (player == PLAYER_O && val < best_val))
-            {
-                best_val = val;
-                best_move = moves[i][9];
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-    // Set best move to board
-    board_state[best_move] = player;
     //printBoard(board_state);
 }
 
@@ -882,9 +630,9 @@ void playAgainstML()
 }
 
 // Evaluate ML vs Minimax algorithm
-void MLvsMinMAx(int length)
+void MLvsMiniMax(int length)
 {
-    // 1 is ML 2 is MinMax
+    // 1 is ML 2 is MiniMax
     int board_status =9, current_player=0,turn=0,MLWins=0,MMXwins=0,draws=0;
     for(int game_no = 1;game_no <= length;game_no++)
     {
@@ -928,7 +676,7 @@ void MLvsMinMAx(int length)
                 // Minimax move
                 printf("MMX turn\n");
                 board_state[MMXBest(board_state,current_player)] = current_player;
-                //get board status
+                // Get board status
                 board_status = BoardState(board_state);
                 printBoard(board_state);
                 if(board_status != 9)
@@ -944,11 +692,11 @@ void MLvsMinMAx(int length)
                     current_player =1;
                 }
             }
-            //MinMax first
+            // MiniMax first
             else
             {
                 
-                //MinMax
+                // inMax
                 printf("MMX turn\n");
                 board_state[MMXBest(board_state,current_player)] = current_player;
                 board_status = BoardState(board_state);
@@ -1002,12 +750,12 @@ void MLvsMinMAx(int length)
         else
         {
             printBoard(board_state);
-            printf("\nMINMAX WINS!\n");
+            printf("\nMINIMAX WINS!\n");
             MMXwins++;
         }
 
 }
-    printf("ML: %d MinMax:%d Draws:%d",MLWins,MMXwins,draws);
+    printf("ML: %d MiniMax:%d Draws:%d",MLWins,MMXwins,draws);
 }
 
 int MMXBest(int state[BOARD],int CurrentPlayer)
